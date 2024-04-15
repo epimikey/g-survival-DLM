@@ -27,7 +27,7 @@
 ###******************************
 
 # install required packages
-requiredPackages = c('tidyverse','dlnm','splitstackshape','boot','svMisc','ggplot2')
+requiredPackages = c('tidyverse','dlnm','splitstackshape','svMisc','ggplot2')
 for (p in requiredPackages) {
   if (!require(p, character.only = TRUE))
     install.packages(p)
@@ -44,10 +44,10 @@ pred_intervention <- data.frame(id=character(), time=numeric(), p=numeric(), wee
 
 ### STEP 0: READ IN DATASETS
 
-df <- readRDS("C:/Users/Michael/Dropbox/BIDMC/Preterm/Projects/PM/Revision/To Submit/Code/df_mock.rds")
-pm.week <- readRDS("C:/Users/Michael/Dropbox/BIDMC/Preterm/Projects/PM/Revision/To Submit/Code/pm_week.rds")
-nd.week <- readRDS("C:/Users/Michael/Dropbox/BIDMC/Preterm/Projects/PM/Revision/To Submit/Code/nd_week.rds")
-temp.week <- readRDS("C:/Users/Michael/Dropbox/BIDMC/Preterm/Projects/PM/Revision/To Submit/Code/temp_week.rds")
+df <- readRDS("WORK DIRECTORY")
+pm.week <- readRDS("WORK DIRECTORY")
+nd.week <- readRDS("WORK DIRECTORY")
+temp.week <- readRDS("WORK DIRECTORY")
 
 for(i in 28:36){ # loop through all the risk sets
   
@@ -210,6 +210,21 @@ sum((pred_average_all1 %>% filter(time == 36))$rd)
 
 ### STEP 5 (ADDITIONAL STEPS)
 
+# Plotting cumulative risk curves (here, had there been no intervention)
+pred_average_all1 %>% filter(week_intervention == 0) %>% ungroup() %>% select(time, risk) %>% mutate(risk = round(risk,4)) %>% 
+  ggplot() +
+  geom_line(aes(x=time, y=risk)) +
+  labs(x="Gestational Weeks", y="Risk of Birth") +
+  scale_x_continuous(limits = c(28, 36), breaks=seq(28,36,1)) +
+  scale_y_continuous(limits = c(0, 0.1), breaks=seq(0,0.1,0.01)) +
+  coord_cartesian(xlim=c(28,36)) +
+  theme_bw() +
+  theme(panel.spacing.y=unit(1.5,"lines"),
+        panel.spacing.x=unit(1.25,"lines"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.position=c(0.15, 0.87))
+
 # Creating Figure 3 (Risk Difference for each risk set and week of intervention)
 ggplot(pred_average_all1, aes(x=week_intervention, y=(time), fill=rd)) +
   geom_raster() +
@@ -224,17 +239,3 @@ ggplot(pred_average_all1, aes(x=week_intervention, y=(time), fill=rd)) +
         strip.text=element_text(size=16),
         axis.title=element_text(size=16))
 
-# Creating Figure S3 (Risks under No Intervention)
-pred_average_all1 %>% filter(week_intervention == 0) %>% ungroup() %>% select(time, risk) %>% mutate(risk = round(risk,4)) %>% 
-  ggplot() +
-  geom_line(aes(x=time, y=risk)) +
-  labs(x="Gestational Weeks", y="Risk of Birth") +
-  scale_x_continuous(limits = c(28, 36), breaks=seq(28,36,1)) +
-  scale_y_continuous(limits = c(0, 0.1), breaks=seq(0,0.1,0.01)) +
-  coord_cartesian(xlim=c(28,36)) +
-  theme_bw() +
-  theme(panel.spacing.y=unit(1.5,"lines"),
-        panel.spacing.x=unit(1.25,"lines"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        legend.position=c(0.15, 0.87))
